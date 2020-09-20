@@ -13,7 +13,7 @@ import (
 func iscdn(domain chan string,ret chan string){
 	for{
 		domain:=<-domain
-		cmd:=exec.Command("cmd.exe","/c","nslookup "+domain)
+		cmd:=exec.Command("nslookup",domain)
 		res,err:=cmd.Output()
 		if(err!=nil){
 			fmt.Println("errr in cmd.exe not power",err)
@@ -22,10 +22,9 @@ func iscdn(domain chan string,ret chan string){
 		reg:=regexp.MustCompile("(2(5[0-5]{1}|[0-4]\\d{1})|[0-1]?\\d{1,2})(\\.(2(5[0-5]{1}|[0-4]\\d{1})|[0-1]?\\d{1,2})){3}")
 		str:=reg.FindAllString(canary,-1)
 		if len(str)>2{
-			ret<- domain+",CDN存在"
+			ret<- domain+",HAVE CDN"
 		}else{
-
-			ret<- domain+",CDN不存在"
+			ret<- domain+",NOT CDN,"+str[1]
 		}
 	}
 
@@ -62,7 +61,7 @@ func say(){
 `
 	for _, char := range []rune(rap) {
 		fmt.Printf("%s",string(char))
-		time.Sleep(time.Microsecond*100000)
+		time.Sleep(time.Microsecond*1000)
 	}
 }
 
@@ -72,7 +71,9 @@ func producer(urllist []string){
 	say()
 	for _,v :=range urllist{
 		if v!=""{
-			urllistx<-v
+			str:=strings.Replace(v,"http://","",-1)
+			str2:=strings.Replace(str,"https://","",-1)
+			urllistx<-str2
 		}
 	}
 	for i:=0;i<30;i++{
@@ -82,7 +83,7 @@ func producer(urllist []string){
 	os.OpenFile("result.csv",os.O_WRONLY|os.O_CREATE,0666)
 	for{
 		select {
-		case <-time.After(time.Second*3):
+		case <-time.After(time.Second*20):
 			os.Exit(0)
 		case res:=<-channer:
 			id=id+1
