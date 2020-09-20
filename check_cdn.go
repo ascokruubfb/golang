@@ -21,11 +21,18 @@ func iscdn(domain chan string,ret chan string){
 		canary:=string(res)
 		reg:=regexp.MustCompile("(2(5[0-5]{1}|[0-4]\\d{1})|[0-1]?\\d{1,2})(\\.(2(5[0-5]{1}|[0-4]\\d{1})|[0-1]?\\d{1,2})){3}")
 		str:=reg.FindAllString(canary,-1)
-		if len(str)>2{
+		if strings.Contains(canary,"Aliases")==true{
 			ret<- domain+",HAVE CDN"
 		}else{
-			ret<- domain+",NOT CDN,"+str[1]
+			if len(str)>2{
+				ret<- domain+",HAVE CDN"
+			}else{
+				if len(str)>1{
+					ret<- domain+",NOT CDN,"+str[1]
+				}
+			}
 		}
+
 	}
 
 }
@@ -73,7 +80,8 @@ func producer(urllist []string){
 		if v!=""{
 			str:=strings.Replace(v,"http://","",-1)
 			str2:=strings.Replace(str,"https://","",-1)
-			urllistx<-str2
+			str3:=strings.Replace(str2,"/","",-1)
+			urllistx<-str3
 		}
 	}
 	for i:=0;i<30;i++{
